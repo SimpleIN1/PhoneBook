@@ -13,8 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class RecyclerAdapter(
-        private var list: List<String>,
-        private val onClick:(index: Int) -> Unit
+        private var list: List<Todo>,
+        private val onClick:(index: Int) -> Unit,
+        private val onClickDel:(index: Int, indexDb:Int) -> Unit,
     ):RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { //Создает View и кладет его во ViewHolder
@@ -23,10 +24,16 @@ class RecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) { // Обновлдяет свое содержимое для элемента, который оказался на экране
-        holder.textView.text = list[position]
+        holder.textView.text = list[position].content
 
-        holder.button.setOnClickListener{
+        holder.button.setOnClickListener {
             onClick(holder.adapterPosition)
+        }
+
+        holder.buttonDel.setOnClickListener {
+            if(holder.adapterPosition>-1){
+                onClickDel(holder.adapterPosition, list[holder.adapterPosition].id)
+            }
         }
 
     }
@@ -37,5 +44,6 @@ class RecyclerAdapter(
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) { //  Класс для доступа к элеменету списка
         val textView = itemView.findViewById<TextView>(R.id.textView)
         val button = itemView.findViewById<Button>(R.id.buttonGo)
+        val buttonDel = itemView.findViewById<Button>(R.id.buttonDel)
     }
 }

@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
 
+    private val dBHelper = DBHelper(this)
+
     companion object {
         const val EXTRA_INDEX = "INDEX1"
         const val EXTRA_VALUE = "VALUE1"
@@ -21,20 +23,28 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter:RecyclerAdapter;
 
-    private var listItem = mutableListOf<String>()
+    private var listItem = mutableListOf<Todo>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-
-       adapter = RecyclerAdapter(listItem){
-            val intent = Intent(this, MainActivity2::class.java)
-            intent.putExtra(EXTRA_INDEX, it)
-            intent.putExtra(EXTRA_VALUE, listItem[it])
-            startActivityForResult(intent, REQUEST_CODE)
+        for (item in dBHelper.getToDo()){
+            listItem.add(Todo(item.id, item.content))
         }
+
+       adapter = RecyclerAdapter(listItem, { updateId ->
+               val intent = Intent(this, MainActivity2::class.java)
+               intent.putExtra(EXTRA_INDEX, updateId)
+               intent.putExtra(EXTRA_VALUE, listItem[updateId].content)
+               startActivityForResult(intent, REQUEST_CODE)
+       }, { delId, delIdDb ->
+               listItem.removeAt(delId)
+                dBHelper.delToDo(delIdDb)
+               adapter.notifyItemRemoved(delId)
+           })
+
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -46,7 +56,9 @@ class MainActivity : AppCompatActivity() {
         buttonAdd.setOnClickListener {
 
             if(editText.text.toString()!="") {
-                listItem.add(editText.text.toString())
+//                val todo = Todo()
+                listItem.add(Todo(listItem.lastIndex+1,editText.text.toString()))
+                dBHelper.addToDo(editText.text.toString())
                 adapter.notifyItemInserted(listItem.lastIndex)
                 editText.text = null
             }
@@ -63,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             val index = data.getIntExtra(MainActivity2.RESULT_INDEX,-1)
 
             if (index >-1 && result != null){
-                listItem[index] = result
+                listItem[index].content = result
                 adapter.notifyItemChanged(index)
             }
 
