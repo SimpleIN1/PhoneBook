@@ -9,10 +9,15 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 
 class MainActivity : AppCompatActivity() {
 
-    private val dBHelper = DBHelper(this)
+//    private val dBHelper = DBHelper(this)
+
+    private lateinit var db: TodoDatabase
+    private lateinit var todoDao: TodoDao
+
 
     companion object {
         const val EXTRA_INDEX = "INDEX1"
@@ -23,16 +28,25 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter:RecyclerAdapter;
 
-    private var listItem = mutableListOf<Todo>()
+    private var listItem = mutableListOf<TodoEntity>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        for (item in dBHelper.getToDo()){
-            listItem.add(Todo(item.id, item.content))
-        }
+
+
+
+        db = Room.databaseBuilder(
+            applicationContext,
+            TodoDatabase::class.java,
+            "tododb"
+        ).allowMainThreadQueries().build()
+
+        todoDao = db.todoDao()
+
+        listItem.addAll(todoDao.all)
 
        adapter = RecyclerAdapter(listItem, { updateId ->
                val intent = Intent(this, MainActivity2::class.java)
@@ -41,8 +55,9 @@ class MainActivity : AppCompatActivity() {
                startActivityForResult(intent, REQUEST_CODE)
        }, { delId, delIdDb ->
                listItem.removeAt(delId)
-                dBHelper.delToDo(delIdDb)
-               adapter.notifyItemRemoved(delId)
+//                dBHelper.delToDo(delIdDb)
+                todoDao.delete(todoDao.getById(delIdDb))
+                adapter.notifyItemRemoved(delId)
            })
 
 
@@ -56,9 +71,12 @@ class MainActivity : AppCompatActivity() {
         buttonAdd.setOnClickListener {
 
             if(editText.text.toString()!="") {
-//                val todo = Todo()
-                listItem.add(Todo(listItem.lastIndex+1,editText.text.toString()))
-                dBHelper.addToDo(editText.text.toString())
+                val todo = TodoEntity()
+//                todo.id = listItem.lastIndex+1
+                todo.content = editText.text.toString()
+                listItem.add(todo)
+                todoDao.insert(todo)
+//                dBHelper.addToDo(editText.text.toString())
                 adapter.notifyItemInserted(listItem.lastIndex)
                 editText.text = null
             }

@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class RecyclerAdapter(
-        private var list: List<Todo>,
+        private var list: List<TodoEntity>,
         private val onClick:(index: Int) -> Unit,
-        private val onClickDel:(index: Int, indexDb:Int) -> Unit,
+        private val onClickDel:(index: Int, indexDb:Long) -> Unit,
     ):RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { //Создает View и кладет его во ViewHolder
@@ -32,7 +32,13 @@ class RecyclerAdapter(
 
         holder.buttonDel.setOnClickListener {
             if(holder.adapterPosition>-1){
-                onClickDel(holder.adapterPosition, list[holder.adapterPosition].id)
+//                if(list[holder.adapterPosition].id!=null){
+                list[holder.adapterPosition].id?.let { it1 ->
+                    onClickDel(holder.adapterPosition,
+                        it1
+                    )
+                }
+//                }
             }
         }
 
