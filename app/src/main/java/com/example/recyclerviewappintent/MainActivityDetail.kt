@@ -2,6 +2,7 @@ package com.example.recyclerviewappintent
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -69,7 +70,9 @@ class MainActivityDetail : AppCompatActivity() {
         }
 
         textViewP.setOnClickListener {
-
+            val intent = Intent(Intent.ACTION_CALL)
+            intent.data = Uri.parse("tel:${textViewP.text}")
+            startActivity(intent)
         }
     }
 }
