@@ -72,10 +72,7 @@ class MainActivity : AppCompatActivity() {
                     editText.text.toString().lowercase() in it.firstName.lowercase() ||
                     editText.text.toString().lowercase() in it.lastName.lowercase()
             })
-            adapter.run { notifyDataSetChanged() }
+            adapter.notifyDataSetChanged()
         }
     }
-
-
-
 }
